@@ -10,8 +10,6 @@ public class Interpreter
 
     public void Execute(string code)
     {
-        
-        
         for (int i = 0; i < code.Length; i++)
         {
             var c = code[i];
@@ -36,10 +34,12 @@ public class Interpreter
                     _cells[_index]--;
                     break;
                 case '.':
-                    Console.WriteLine($"\n{(char)_cells[_index]}");
+                    Console.Write((char)_cells[_index]);
                     break;
                 case ',':
+                    Console.Write('\n');
                     _cells[_index] = Encoding.Default.GetBytes(Console.ReadKey().KeyChar.ToString())[0];
+                    Console.Write('\n');
                     break;
                 case '[':
                     if (_cells[_index] == 0)
