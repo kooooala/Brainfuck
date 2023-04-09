@@ -20,7 +20,7 @@ class Program
         }
         else if (args.Length == 1)
         {
-            var code = File.ReadAllText(args[1]);
+            var code = File.ReadAllText(args[0]);
             var interpreter = new Interpreter();
             
             interpreter.Execute(code);
