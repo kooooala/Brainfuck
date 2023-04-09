@@ -36,7 +36,7 @@ public class Interpreter
                     _cells[_index]--;
                     break;
                 case '.':
-                    Console.Write((char)_cells[_index]);
+                    Console.WriteLine($"\n{(char)_cells[_index]}");
                     break;
                 case ',':
                     _cells[_index] = Encoding.Default.GetBytes(Console.ReadKey().KeyChar.ToString())[0];

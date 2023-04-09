@@ -20,7 +20,16 @@ class Program
         }
         else if (args.Length == 1)
         {
-            var code = File.ReadAllText(args[0]);
+            string code = string.Empty;
+            try
+            {
+                code = File.ReadAllText(args[0]);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error when reading from file: {ex.Message}");
+                return;
+            }
             var interpreter = new Interpreter();
             
             interpreter.Execute(code);
