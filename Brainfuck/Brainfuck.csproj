@@ -5,6 +5,9 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>bf</ToolCommandName>
+        <PackageOutputPath>.\Package</PackageOutputPath>
     </PropertyGroup>
 
 </Project>
