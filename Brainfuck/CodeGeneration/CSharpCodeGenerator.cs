@@ -1,28 +1,36 @@
 ﻿using Brainfuck.Parsing;
+using Brainfuck.CodeGeneration;
 
 namespace Brainfuck.CodeGeneration;
 
-public class CCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
+public class CSharpCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
 {
     public override string Generate(List<Command> commands)
     {
         Commands = commands;
-        
-        // initialise code
+
         ResultBuilder.AppendLine("""
-            #include <stdint.h>
-            #include <stdio.h>
+            using System;
 
-            uint8_t input() {
-                int key = getchar();
-                return (uint8_t)(key != EOF ? key : 0);
-            }
-
-            int main() {
-                uint8_t cells[30000] = { 0 };
-                uint8_t * pointer = &cells[0];
+            class Program
+            {
+                private static int[] cells = new int[30000];
+                private static int pointer = 0;
+                
+                static void Read()
+                {
+                    cells[pointer] = System.Text.Encoding.Default.GetBytes(Console.ReadKey().KeyChar.ToString())[0];
+                }
+        
+                static void Write()
+                {
+                    Console.Write((char)cells[pointer]);
+                }
+        
+                static void Main(string[] args)
+                {
             """);
-        Indentations = 1;
+        Indentations = 2;
 
         foreach (var command in Commands)
         {
@@ -34,22 +42,22 @@ public class CCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
 
     public object? VisitInputCommand(Command.Input command)
     {
-        Add("*pointer = input();");
-        
+        Add("Read();");
+
         return null;
     }
 
     public object? VisitOutputCommand(Command.Output command)
     {
-        Add("putchar(*pointer);");
-        
+        Add("Write();");
+
         return null;
     }
 
     public object? VisitLeftCommand(Command.Left command)
     {
         Add($"pointer -= {command.Count};");
-        
+
         return null;
     }
 
@@ -62,23 +70,23 @@ public class CCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
 
     public object? VisitIncrementCommand(Command.Increment command)
     {
-        Add($"*pointer += {command.Count};");
-        
+        Add($"cells[pointer] += {command.Count};");
+
         return null;
     }
 
     public object? VisitDecrementCommand(Command.Decrement command)
     {
-        Add($"*pointer -= {command.Count};");
-        
+        Add($"cells[pointer] -= {command.Count};");
+
         return null;
     }
 
     public object? VisitLeftParenCommand(Command.LeftParen command)
     {
-        Add("while (*pointer != 0) {");
+        Add("while (cells[pointer] != 0) {");
         Indentations++;
-        
+
         return null;
     }
 
@@ -86,22 +94,25 @@ public class CCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
     {
         Indentations--;
         Add("}");
-        
-        return null;
-    }
-
-    public object? VisitEofCommand(Command.Eof command)
-    {
-        Indentations = 0;
-        Add("}");
 
         return null;
     }
 
     public object? VisitToZeroCommand()
     {
-        Add("*pointer = 0;");
+        Add("cells[pointer] = 0;");
+
+        return null;
+    }
+
+    public object? VisitEofCommand(Command.Eof command)
+    {
+        Indentations--;
+        Add("}");
+        Indentations--;
+        Add("}");
 
         return null;
     }
 }
+

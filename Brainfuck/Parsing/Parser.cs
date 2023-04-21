@@ -1,4 +1,5 @@
-﻿using Brainfuck.Tokenization;
+﻿using System.Collections;
+using Brainfuck.Tokenization;
 
 namespace Brainfuck.Parsing
 {
@@ -8,7 +9,7 @@ namespace Brainfuck.Parsing
         private List<Token> _tokens;
         private int _currentTokenLocation = 0;
 
-        public List<BracketPair> Brackets = new(); 
+        public Dictionary<int, int> Brackets = new(); 
 
         public Parser(List<Token> tokens)
         {
@@ -18,6 +19,8 @@ namespace Brainfuck.Parsing
 
         public List<Command> Parse()
         {
+            var bracketStack = new Stack<int>();
+            
             while (!IsAtEnd())
             {
                 switch (GetCurrentToken().Type)
@@ -51,23 +54,18 @@ namespace Brainfuck.Parsing
 
                         _commands.Add(new Command.LeftParen());
 
-                        Brackets.Add(new BracketPair(_commands.Count - 1, -1));
+                        bracketStack.Push(_commands.Count);
                         break;
                     case TokenType.RightParen:
                         _commands.Add(new Command.RightParen());
 
-                        for (var i = Brackets.Count - 1; i >= 0; i--)
-                        {
-                            if (Brackets[i].ClosePos == -1)
-                            {
-                                Brackets[i].ClosePos = _commands.Count;
-                                goto Exit;
-                            }
-                        }
+                        int target;
+                        var isSuccessful = bracketStack.TryPop(out target);
+                        if (!isSuccessful) throw new Exception("Missing closing bracket.");
+
+                        Brackets.Add(_commands.Count - 1, target - 1);
+                        Brackets.Add(target - 1, _commands.Count - 1);
                         
-                        throw new Exception("Missing closing bracket");
-                        
-                        Exit:
                         break;
                 }
 
@@ -111,17 +109,5 @@ namespace Brainfuck.Parsing
         private Token NextToken() => _tokens[_currentTokenLocation + 1];
 
         private Token NextToken(int count) => _tokens[_currentTokenLocation + count];
-    }
-
-    public class BracketPair
-    {
-        public int OpenPos { get; set; }
-        public int ClosePos { get; set; }
-
-        public BracketPair(int openPos, int closePos)
-        {
-            OpenPos = openPos;
-            ClosePos = closePos;
-        }
     }
 }

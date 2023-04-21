@@ -5,7 +5,7 @@ namespace Brainfuck.CodeGeneration;
 
 public abstract class BaseCodeGenerator
 {
-    protected readonly List<Command> Commands;
+    protected List<Command> Commands;
     protected StringBuilder ResultBuilder;
     protected int Indentations = 0;
     

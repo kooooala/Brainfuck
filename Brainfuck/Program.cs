@@ -7,8 +7,7 @@ namespace Brainfuck;
 
 class Program
 {
-    // TODO: support for Javascript & C#
-    // TODO: more optimised IR
+    // TODO: optimise IR
 
     static void Main(string[] args)
     {
@@ -66,50 +65,67 @@ class Program
         Environment.Exit(0);
     }
 
-    static void RunFromFile(string[] args)
+    private static void RunFromFile(string[] args)
     {
         var sourceFile = args[0];
+
         BaseCodeGenerator generator = args.Contains("-l")
             ? args[Array.FindIndex(args, arg => arg == "-l") + 1].ToLower() switch
             {
                 "c" => new CCodeGenerator(),
                 "py" or "python" => new PythonCodeGenerator(),
+                "c#" or "csharp" or "cs" => new CSharpCodeGenerator(),
                 _ => throw new Exception("Unknown language")
             }
             : new CCodeGenerator();
         var outputFile = args.Contains("-o")
             ? args[Array.FindIndex(args, arg => arg == "-o") + 1]
-            : sourceFile + generator switch
+            : ExtractFileName(sourceFile) + generator switch
             {
                 CCodeGenerator => ".c", 
-                PythonCodeGenerator => ".py"
+                PythonCodeGenerator => ".py",
+                CSharpCodeGenerator => ".cs",
             };
 
-        var souceCode = File.ReadAllText(sourceFile);
+        string ExtractFileName(string source)
+        {
+            var result = source.Split(source.Contains('/') ? '/' : '\\')[^1]; 
+            return result.Split('.')[0];
+        }
 
-        var lexer = new Lexer(souceCode);
+        var sourceCode = File.ReadAllText(sourceFile);
+
+        var lexer = new Lexer(sourceCode);
         var parser = new Parser(lexer.Scan());
+
+        if (args.Contains("-r"))
+        {
+            new Interpreter().Interpret(parser.Parse(), parser.Brackets);
+            return;
+        }
 
         File.WriteAllText(outputFile, generator.Generate(parser.Parse()));
     }
 
-    static void ShowHelp(string[] args)
+    private static void ShowHelp(string[] args)
     {
         Console.WriteLine("""
             Usage: bf [<source>] [-l <language>] [-o <file>] [-r]
             
             Options: 
-                -l <language>   Specify the target language
-                -o <file>       Place the output into <file>
-            
-            Arguments:
-                <source>        Path to the source file
-                <language>      Target language
-                <file>          Output file
-
-            Supported languages:
-                c               C
-                py | python     Python
+                -l <language>       Specify the target language
+                -o <file>           Place the output into <file>
+                -r                  Run file using the built-in BF interpreter
+                
+            Argument    
+                <source>            Path to the source file
+                <language>          Target language
+                <file>              Output file
+    
+            Supported languages:    
+                c                   C
+                py | python         Python
+                c# | cs | CSharp    C#
             """);
     }
 }

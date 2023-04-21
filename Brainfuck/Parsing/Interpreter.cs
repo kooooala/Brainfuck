@@ -10,9 +10,9 @@ public class Interpreter : Command.IVisitor<object?>
     private int _count;
 
     private List<Command> _commands;
-    private List<BracketPair> _bracketMap;
+    private Dictionary<int, int> _bracketMap;
 
-    public void Interpret(List<Command> commands, List<BracketPair> bracketMap)
+    public void Interpret(List<Command> commands, Dictionary<int, int> bracketMap)
     {
         _commands = commands;
         _bracketMap = bracketMap;
@@ -39,9 +39,8 @@ public class Interpreter : Command.IVisitor<object?>
 
     public object? VisitLeftCommand(Command.Left command)
     {
-        if (_pointer == 0) throw new Exception("Pointer out of bound");
-        
         _pointer -= (byte)command.Count;
+        if (_pointer < 0) throw new Exception("Pointer out of bound");
 
         return null;
     }
@@ -49,8 +48,9 @@ public class Interpreter : Command.IVisitor<object?>
     public object? VisitRightCommand(Command.Right command)
     {
         _pointer += (byte)command.Count;
-        
-        if (_pointer >= _cells.Count)
+
+        var originalCount = _cells.Count;
+        for (var i = 0; i <= _pointer - originalCount; i++)
             _cells.Add(0);
 
         return null;
@@ -73,7 +73,7 @@ public class Interpreter : Command.IVisitor<object?>
     public object? VisitLeftParenCommand(Command.LeftParen command)
     {
         if (_cells[_pointer] == 0)
-            _count = _bracketMap.First(i => i.OpenPos == _count - 1).ClosePos;
+            _count = _bracketMap[_count];
 
         return null;
     }
@@ -81,7 +81,7 @@ public class Interpreter : Command.IVisitor<object?>
     public object? VisitRightParenCommand(Command.RightParen command)
     {
         if (_cells[_pointer] != 0)
-            _count = _bracketMap.First(i => i.ClosePos == _count + 1).OpenPos;
+            _count = _bracketMap[_count];
 
         return null;
     }
