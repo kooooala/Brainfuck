@@ -117,7 +117,7 @@ class Program
                 -o <file>           Place the output into <file>
                 -r                  Run file using the built-in BF interpreter
                 
-            Argument    
+            Arguments: 
                 <source>            Path to the source file
                 <language>          Target language
                 <file>              Output file
