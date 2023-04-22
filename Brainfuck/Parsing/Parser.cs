@@ -3,19 +3,11 @@ using Brainfuck.Tokenization;
 
 namespace Brainfuck.Parsing
 {
-    public class Parser
+    public class Parser : BaseScanner<Token, Command>
     {
-        private List<Command> _commands;
-        private List<Token> _tokens;
-        private int _currentTokenLocation = 0;
+        public Dictionary<int, int> Brackets = new();
 
-        public Dictionary<int, int> Brackets = new(); 
-
-        public Parser(List<Token> tokens)
-        {
-            _tokens = tokens;
-            _commands = new();
-        }
+        public Parser(List<Token> tokens) : base(tokens) {}
 
         public List<Command> Parse()
         {
@@ -23,48 +15,48 @@ namespace Brainfuck.Parsing
             
             while (!IsAtEnd())
             {
-                switch (GetCurrentToken().Type)
+                switch (GetCurrent().Type)
                 {
                     case TokenType.Input:
-                        _commands.Add(new Command.Input());
+                        Outputs.Add(new Command.Input());
                         break;
                     case TokenType.Output:
-                        _commands.Add(new Command.Output());
+                        Outputs.Add(new Command.Output());
                         break;
                     case TokenType.Left:
-                        _commands.Add(new Command.Left(GetCount(TokenType.Left)));
+                        Outputs.Add(new Command.Left(GetCount(TokenType.Left)));
                         break;
                     case TokenType.Right:
-                        _commands.Add(new Command.Right(GetCount(TokenType.Right)));
+                        Outputs.Add(new Command.Right(GetCount(TokenType.Right)));
                         break;
                     case TokenType.Decrement:
-                        _commands.Add(new Command.Decrement(GetCount(TokenType.Decrement)));
+                        Outputs.Add(new Command.Decrement(GetCount(TokenType.Decrement)));
                         break;
                     case TokenType.Increment:
-                        _commands.Add(new Command.Increment(GetCount(TokenType.Increment)));
+                        Outputs.Add(new Command.Increment(GetCount(TokenType.Increment)));
                         break;
                     case TokenType.LeftParen:
                         // check for "[-]" which would set the cell to zero for optimisation  
-                        if (NextToken().Type == TokenType.Decrement && NextToken(2).Type == TokenType.RightParen)
+                        if (Next().Type == TokenType.Decrement && Next(2).Type == TokenType.RightParen)
                         {
                             Move(2);
-                            _commands.Add(new Command.ToZero());
+                            Outputs.Add(new Command.ToZero());
                             break;
                         }
 
-                        _commands.Add(new Command.LeftParen());
+                        Outputs.Add(new Command.LeftParen());
 
-                        bracketStack.Push(_commands.Count);
+                        bracketStack.Push(Outputs.Count);
                         break;
                     case TokenType.RightParen:
-                        _commands.Add(new Command.RightParen());
+                        Outputs.Add(new Command.RightParen());
 
                         int target;
                         var isSuccessful = bracketStack.TryPop(out target);
                         if (!isSuccessful) throw new Exception("Missing closing bracket.");
 
-                        Brackets.Add(_commands.Count - 1, target - 1);
-                        Brackets.Add(target - 1, _commands.Count - 1);
+                        Brackets.Add(Outputs.Count - 1, target - 1);
+                        Brackets.Add(target - 1, Outputs.Count - 1);
                         
                         break;
                 }
@@ -72,18 +64,18 @@ namespace Brainfuck.Parsing
                 Move();
             }
 
-            _commands.Add(new Command.Eof());
+            Outputs.Add(new Command.Eof());
 
-            return _commands;
+            return Outputs;
         }
 
         private int GetCount(TokenType type)
         {
             int count = 0;
-            if (GetCurrentToken().Type == type)
+            if (GetCurrent().Type == type)
                 count++;
 
-            while (NextToken().Type == type)
+            while (Next().Type == type)
             {
                 Move();
                 count++;
@@ -92,22 +84,6 @@ namespace Brainfuck.Parsing
             return count;
         }
 
-        private Token GetCurrentToken() => _tokens[_currentTokenLocation];
-
-        private void Move()
-        {
-            _currentTokenLocation++;
-        }
-
-        private void Move(int count)
-        {
-            _currentTokenLocation += count;
-        }
-
-        private bool IsAtEnd() => GetCurrentToken().Type == TokenType.Eof;
-
-        private Token NextToken() => _tokens[_currentTokenLocation + 1];
-
-        private Token NextToken(int count) => _tokens[_currentTokenLocation + count];
+        private bool IsAtEnd() => GetCurrent().Type == TokenType.Eof;
     }
 }
