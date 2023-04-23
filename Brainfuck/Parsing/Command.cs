@@ -11,8 +11,7 @@ public abstract class Command
         public T VisitRightCommand(Right command);
         public T VisitIncrementCommand(Increment command);
         public T VisitDecrementCommand(Decrement command);
-        public T VisitLeftParenCommand(LeftParen command);
-        public T VisitRightParenCommand(RightParen command);
+        public T VisitLoopCommand(Loop loop);
         public T VisitEofCommand(Eof command);
 
         public T VisitToZeroCommand();
@@ -79,16 +78,17 @@ public abstract class Command
         public readonly int Count;
     }
 
-    public class LeftParen: Command {
-        public override T Accept<T>(IVisitor<T> visitor) {
-            return visitor.VisitLeftParenCommand(this);
+    public class Loop : Command {
+        public Loop(List<Command> commands)
+        {
+            Commands = commands;
         }
-    }
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitLoopCommand(this);
+        }
 
-    public class RightParen: Command {
-        public override T Accept<T>(IVisitor<T> visitor) {
-            return visitor.VisitRightParenCommand(this);
-        }
+        public readonly List<Command> Commands;
     }
 
     public class Eof : Command
