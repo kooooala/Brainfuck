@@ -82,16 +82,14 @@ public class CSharpCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
         return null;
     }
 
-    public object? VisitLeftParenCommand(Command.LeftParen command)
+    public object? VisitLoopCommand(Command.Loop loop)
     {
         Add("while (cells[pointer] != 0) {");
         Indentations++;
 
-        return null;
-    }
+        foreach (var command in loop.Commands)
+            command.Accept(this);
 
-    public object? VisitRightParenCommand(Command.RightParen command)
-    {
         Indentations--;
         Add("}");
 

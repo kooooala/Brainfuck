@@ -69,19 +69,15 @@ public class Interpreter : Command.IVisitor<object?>
 
         return null;
     }
-
-    public object? VisitLeftParenCommand(Command.LeftParen command)
+    public object? VisitLoopCommand(Command.Loop loop)
     {
-        if (_cells[_pointer] == 0)
-            _count = _bracketMap[_count];
-
-        return null;
-    }
-
-    public object? VisitRightParenCommand(Command.RightParen command)
-    {
-        if (_cells[_pointer] != 0)
-            _count = _bracketMap[_count];
+        while (_cells[_pointer] != 0)
+        {
+            foreach (var command in loop.Commands)
+            {
+                command.Accept(this);
+            }
+        }
 
         return null;
     }
