@@ -10,7 +10,7 @@ public class PythonCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
             import sys
 
             def readInput():
-                return sys.stdin.read(1)
+                return sys.stdin.buffer.read(1)[0]
 
             def to_byte(num: int):
                 if (num < 0):
