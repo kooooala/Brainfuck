@@ -4,15 +4,13 @@ namespace Brainfuck.CodeGeneration;
 
 public class PythonCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
 {
-    // BUG: readInput() does not work 
-    
     public override string Generate(List<Command> commands)
     {
         ResultBuilder.AppendLine("""
             import sys
 
             def readInput():
-                return sys.stdin.read(1)
+                return sys.stdin.buffer.read(1)[0]
 
             def to_byte(num: int):
                 if (num < 0):

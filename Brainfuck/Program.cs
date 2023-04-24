@@ -15,8 +15,8 @@ class Program
         run = args switch
         {
             [] => RunRepl,
+            ["--help"] or ["-h"] => ShowHelp,
             [_, ..] or [_] => RunFromFile,
-            _ => ShowHelp
         };
 
         try
@@ -33,7 +33,7 @@ class Program
     static void RunRepl(string[] args)
     {
         Console.Write("""
-                Brainfuck interactive console by kooooala
+                Brainfuck interactive console made by kooooala
                 https://github.com/kooooala/brainfuck
 
                 Type quit to exit
