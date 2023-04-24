@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Brainfuck.Tokenization;
+﻿using Brainfuck.Tokenization;
 using Brainfuck.CodeGeneration;
 using Brainfuck.Parsing;
 
@@ -54,7 +53,7 @@ class Program
                 var lexer = new Lexer(userInput);
                 var parser = new Parser(lexer.Scan());
             
-                interpreter.Interpret(parser.Parse(), parser.Brackets);
+                interpreter.Interpret(parser.Parse());
             }
             catch (Exception e)
             {
@@ -97,14 +96,17 @@ class Program
 
         var lexer = new Lexer(sourceCode);
         var parser = new Parser(lexer.Scan());
+        var optimizer = new Optimizer(parser.Parse());
+
+        var irOutput = optimizer.Optimize();
 
         if (args.Contains("-r"))
         {
-            new Interpreter().Interpret(parser.Parse(), parser.Brackets);
+            new Interpreter().Interpret(irOutput);
             return;
         }
 
-        File.WriteAllText(outputFile, generator.Generate(parser.Parse()));
+        File.WriteAllText(outputFile, generator.Generate(irOutput));
     }
 
     private static void ShowHelp(string[] args)

@@ -4,6 +4,8 @@ namespace Brainfuck.CodeGeneration;
 
 public class PythonCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
 {
+    // BUG: readInput() does not work 
+    
     public override string Generate(List<Command> commands)
     {
         ResultBuilder.AppendLine("""

@@ -10,12 +10,10 @@ public class Interpreter : Command.IVisitor<object?>
     private int _count;
 
     private List<Command> _commands;
-    private Dictionary<int, int> _bracketMap;
 
-    public void Interpret(List<Command> commands, Dictionary<int, int> bracketMap)
+    public void Interpret(List<Command> commands)
     {
         _commands = commands;
-        _bracketMap = bracketMap;
         
         for (_count = 0; _count < _commands.Count; _count++)
         {
