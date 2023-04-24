@@ -10,7 +10,7 @@ public class PythonCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
             import sys
 
             def readInput():
-                return sys.stdin.read(1)
+                return sys.stdin.buffer.read(1)[0]
 
             def to_byte(num: int):
                 if (num < 0):
@@ -72,16 +72,16 @@ public class PythonCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
         return null;
     }
 
-    public object? VisitLeftParenCommand(Command.LeftParen command)
+    public object? VisitLoopCommand(Command.Loop loop)
     {
         Add("while (cells[pointer] != 0):");
         Indentations++;
+        
+        foreach (var command in loop.Commands)
+        {
+            command.Accept(this);
+        }
 
-        return null;
-    }
-
-    public object? VisitRightParenCommand(Command.RightParen command)
-    {
         Indentations--;
 
         return null;

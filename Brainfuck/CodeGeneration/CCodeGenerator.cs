@@ -74,19 +74,17 @@ public class CCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
         return null;
     }
 
-    public object? VisitLeftParenCommand(Command.LeftParen command)
+    public object? VisitLoopCommand(Command.Loop loop)
     {
         Add("while (*pointer != 0) {");
         Indentations++;
-        
-        return null;
-    }
 
-    public object? VisitRightParenCommand(Command.RightParen command)
-    {
+        foreach (var command in loop.Commands)
+            command.Accept(this);
+
         Indentations--;
         Add("}");
-        
+
         return null;
     }
 
