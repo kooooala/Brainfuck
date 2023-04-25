@@ -12,12 +12,7 @@ public class Optimizer : BaseScanner<Command, Command>
             switch (current)
             {
                 case Command.Loop loop:
-                    if (loop.Commands is [Command.Decrement])
-                    {
-                        Outputs.Add(new Command.ToZero());
-                        break;
-                    }
-                    Outputs.Add(current);
+                    Outputs.Add(OptimizeLoop(loop));
                     break;
                 default:
                     Outputs.Add(current);
@@ -29,6 +24,26 @@ public class Optimizer : BaseScanner<Command, Command>
 
         Outputs.Add(new Command.Eof());
         return Outputs;
+    }
+
+    private Command OptimizeLoop(Command.Loop loop)
+    {
+        var result = new List<Command>();
+
+        if (loop.Commands is [Command.Decrement]) return new Command.ToZero();
+
+        foreach (var command in loop.Commands)
+        {
+            if (command is Command.Loop loopCommand)
+            {
+                result.Add(OptimizeLoop(loopCommand));
+                continue;
+            }
+            
+            result.Add(command);
+        }
+
+        return new Command.Loop(result);
     }
 
     private bool IsAtEnd() => GetCurrent() is Command.Eof;

@@ -33,6 +33,10 @@ namespace Brainfuck.Parsing
             while (GetCurrent().Type is not TokenType.RightParen)
             {
                 Convert(commandsInLoop);
+
+                if (IsAtEnd())
+                    throw new Exception("Missing closing bracket");
+                
                 Move();
             }
 

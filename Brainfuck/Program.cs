@@ -1,4 +1,5 @@
-﻿using Brainfuck.Tokenization;
+﻿using System.Diagnostics;
+using Brainfuck.Tokenization;
 using Brainfuck.CodeGeneration;
 using Brainfuck.Parsing;
 
@@ -27,6 +28,10 @@ class Program
         {
             Console.WriteLine($"Unable to find file {args[0]}");
             ShowHelp(args);
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine($"Error: {exception.Message}");
         }
     }
 
@@ -68,15 +73,19 @@ class Program
     {
         var sourceFile = args[0];
 
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
+
         BaseCodeGenerator generator = args.Contains("-l")
             ? args[Array.FindIndex(args, arg => arg == "-l") + 1].ToLower() switch
             {
                 "c" => new CCodeGenerator(),
                 "py" or "python" => new PythonCodeGenerator(),
                 "c#" or "csharp" or "cs" => new CSharpCodeGenerator(),
-                _ => throw new Exception("Unknown language")
+                _ => throw new Exception($"Unknown language: {args[Array.FindIndex(args, arg => arg == "-l") + 1]}")
             }
             : new CCodeGenerator();
+        
         var outputFile = args.Contains("-o")
             ? args[Array.FindIndex(args, arg => arg == "-o") + 1]
             : ExtractFileName(sourceFile) + generator switch
@@ -91,6 +100,8 @@ class Program
             var result = source.Split(source.Contains('/') ? '/' : '\\')[^1]; 
             return result.Split('.')[0];
         }
+        
+        
 
         var sourceCode = File.ReadAllText(sourceFile);
 
@@ -105,8 +116,12 @@ class Program
             new Interpreter().Interpret(irOutput);
             return;
         }
+        
+        stopwatch.Stop();
 
         File.WriteAllText(outputFile, generator.Generate(irOutput));
+        
+        Console.WriteLine($"{sourceFile} => {outputFile} in {stopwatch.Elapsed:g}");
     }
 
     private static void ShowHelp(string[] args)
