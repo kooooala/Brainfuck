@@ -65,31 +65,47 @@ public abstract class Command
     }
 
     public class Increment: Command {
-        public Increment(int Count) {
-            this.Count = Count;
+        public Increment(int count) {
+            Count = count;
+            Offset = 0;
+        }
+        
+        public Increment(int count, int offset)
+        {
+            Count = count;
+            Offset = offset;
         }
 
         public override T Accept<T>(IVisitor<T> visitor) {
             return visitor.VisitIncrementCommand(this);
         }
 
-        public override string ToString() => $"+{Count}";
+        public override string ToString() => $"+[{Offset}]{Count}";
 
         public readonly int Count;
+        public int Offset;
     }
 
     public class Decrement: Command {
-        public Decrement(int Count) {
-            this.Count = Count;
+        public Decrement(int count) {
+            Count = count;
+            Offset = 0;
+        }
+
+        public Decrement(int count, int offset)
+        {
+            Count = count;
+            Offset = offset;
         }
 
         public override T Accept<T>(IVisitor<T> visitor) {
             return visitor.VisitDecrementCommand(this);
         }
 
-        public override string ToString() => $"-{Count}";
+        public override string ToString() => $"-[{Offset}]{Count}";
 
         public readonly int Count;
+        public readonly int Offset;
     }
 
     public class Loop : Command {

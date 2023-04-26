@@ -1,4 +1,6 @@
-﻿namespace Brainfuck.Parsing;
+﻿using System.ComponentModel.Design;
+
+namespace Brainfuck.Parsing;
 
 public class Optimizer : BaseScanner<Command, Command>
 {
@@ -32,6 +34,24 @@ public class Optimizer : BaseScanner<Command, Command>
 
         if (loop.Commands is [Command.Decrement]) return new Command.ToZero();
 
+        if (IsCopyLoop(loop)) return OptimizeCopyLoop(loop);
+
+        foreach (var command in loop.Commands)
+        {
+            if (command is Command.Loop loopCommand)
+            {
+                result.Add(OptimizeLoop(loopCommand));
+                continue;
+            }
+            
+            result.Add(command);
+        }
+
+        return new Command.Loop(result);
+    }
+
+    private static bool IsCopyLoop(Command.Loop loop)
+    {
         int leftCount = 0, rightCount = 0;
         foreach (var command in loop.Commands)
         {
@@ -43,23 +63,39 @@ public class Optimizer : BaseScanner<Command, Command>
                 case Command.Right rightCommand:
                     rightCount += rightCommand.Count;
                     break;
+                case Command.Loop:
+                    return false;
             }
         }
 
-        if (leftCount == rightCount)
-        {
-            Console.WriteLine($"possible copy loop found {loop}");
-        }
+        return leftCount == rightCount;
+    }
 
-    foreach (var command in loop.Commands)
+    private static Command.Loop OptimizeCopyLoop(Command.Loop loop)
+    {
+        var result = new List<Command>();
+        var currentOffset = 0;
+        
+        foreach (var command in loop.Commands)
         {
-            if (command is Command.Loop loopCommand)
+            switch (command)
             {
-                result.Add(OptimizeLoop(loopCommand));
-                continue;
+                case Command.Left leftCommand:
+                    currentOffset -= leftCommand.Count;
+                    break;
+                case Command.Right rightCommand:
+                    currentOffset += rightCommand.Count;
+                    break;
+                case Command.Increment incrementCommand:
+                    result.Add(new Command.Increment(incrementCommand.Count, currentOffset));
+                    break;
+                case Command.Decrement decrementCommand:
+                    result.Add(new Command.Decrement(decrementCommand.Count, currentOffset));
+                    break;
+                default:
+                    result.Add(command);
+                    break;
             }
-            
-            result.Add(command);
         }
 
         return new Command.Loop(result);

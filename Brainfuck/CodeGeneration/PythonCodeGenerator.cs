@@ -60,6 +60,12 @@ public class PythonCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
 
     public object? VisitIncrementCommand(Command.Increment command)
     {
+        if (command.Offset != 0)
+        {
+            Add($"cells[pointer + {command.Offset}] = to_byte(cells[pointer + {command.Offset}])");
+            return null;
+        }
+        
         Add($"cells[pointer] = to_byte(cells[pointer] + {command.Count})");
 
         return null;
@@ -67,6 +73,11 @@ public class PythonCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
 
     public object? VisitDecrementCommand(Command.Decrement command)
     {
+        if (command.Offset != 0)
+        {
+            Add($"cells[pointer + {command.Offset}] = to_byte(cells[pointer + {command.Offset}] - {command.Count})");
+        }
+        
         Add($"cells[pointer] = to_byte(cells[pointer] - {command.Count})");
 
         return null;
