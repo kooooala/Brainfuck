@@ -32,7 +32,26 @@ public class Optimizer : BaseScanner<Command, Command>
 
         if (loop.Commands is [Command.Decrement]) return new Command.ToZero();
 
+        int leftCount = 0, rightCount = 0;
         foreach (var command in loop.Commands)
+        {
+            switch (command)
+            {
+                case Command.Left leftCommand:
+                    leftCount += leftCommand.Count;
+                    break;
+                case Command.Right rightCommand:
+                    rightCount += rightCommand.Count;
+                    break;
+            }
+        }
+
+        if (leftCount == rightCount)
+        {
+            Console.WriteLine($"possible copy loop found {loop}");
+        }
+
+    foreach (var command in loop.Commands)
         {
             if (command is Command.Loop loopCommand)
             {

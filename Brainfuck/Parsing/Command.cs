@@ -1,5 +1,7 @@
 // Generated on 16/04/2023 19:56:47
 
+using System.Text;
+
 namespace Brainfuck.Parsing; 
 
 public abstract class Command
@@ -22,12 +24,16 @@ public abstract class Command
         public override T Accept<T>(IVisitor<T> visitor) {
             return visitor.VisitInputCommand(this);
         }
+
+        public override string ToString() => ",";
     }
 
     public class Output: Command {
         public override T Accept<T>(IVisitor<T> visitor) {
             return visitor.VisitOutputCommand(this);
         }
+
+        public override string ToString() => ".";
     }
 
     public class Left: Command {
@@ -38,6 +44,8 @@ public abstract class Command
         public override T Accept<T>(IVisitor<T> visitor) {
             return visitor.VisitLeftCommand(this);
         }
+
+        public override string ToString() => $"<{Count}";
 
         public readonly int Count;
     }
@@ -51,6 +59,8 @@ public abstract class Command
             return visitor.VisitRightCommand(this);
         }
 
+        public override string ToString() => $">{Count}";
+
         public readonly int Count;
     }
 
@@ -62,6 +72,8 @@ public abstract class Command
         public override T Accept<T>(IVisitor<T> visitor) {
             return visitor.VisitIncrementCommand(this);
         }
+
+        public override string ToString() => $"+{Count}";
 
         public readonly int Count;
     }
@@ -75,6 +87,8 @@ public abstract class Command
             return visitor.VisitDecrementCommand(this);
         }
 
+        public override string ToString() => $"-{Count}";
+
         public readonly int Count;
     }
 
@@ -86,6 +100,18 @@ public abstract class Command
         public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitLoopCommand(this);
+        }
+
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+
+            foreach (var command in Commands)
+            {
+                builder.Append(command);
+            }
+
+            return builder.ToString();
         }
 
         public readonly List<Command> Commands;
@@ -103,6 +129,8 @@ public abstract class Command
         {
             return visitor.VisitToZeroCommand();
         }
-    }
 
+
+        public override string ToString() => "0";
+    }
 }

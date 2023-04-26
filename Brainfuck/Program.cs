@@ -24,7 +24,7 @@ class Program
         {
             run(args);
         }
-        catch (FileNotFoundException exception)
+        catch (FileNotFoundException)
         {
             Console.WriteLine($"Unable to find file {args[0]}");
             ShowHelp(args);
