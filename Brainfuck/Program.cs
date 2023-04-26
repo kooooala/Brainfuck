@@ -24,7 +24,7 @@ class Program
         {
             run(args);
         }
-        catch (FileNotFoundException exception)
+        catch (FileNotFoundException)
         {
             Console.WriteLine($"Unable to find file {args[0]}");
             ShowHelp(args);
@@ -95,14 +95,6 @@ class Program
                 CSharpCodeGenerator => ".cs",
             };
 
-        string ExtractFileName(string source)
-        {
-            var result = source.Split(source.Contains('/') ? '/' : '\\')[^1]; 
-            return result.Split('.')[0];
-        }
-        
-        
-
         var sourceCode = File.ReadAllText(sourceFile);
 
         var lexer = new Lexer(sourceCode);
@@ -122,6 +114,12 @@ class Program
         File.WriteAllText(outputFile, generator.Generate(irOutput));
         
         Console.WriteLine($"{sourceFile} => {outputFile} in {stopwatch.Elapsed:g}");
+    }
+    
+    private static string ExtractFileName(string source)
+    {
+        var result = source.Split(source.Contains('/') ? '/' : '\\')[^1]; 
+        return result.Split('.')[0];
     }
 
     private static void ShowHelp(string[] args)

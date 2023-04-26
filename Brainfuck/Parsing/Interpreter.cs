@@ -56,14 +56,26 @@ public class Interpreter : Command.IVisitor<object?>
 
     public object? VisitIncrementCommand(Command.Increment command)
     {
-        _cells[_pointer] += (byte)command.Count;
+        if (_pointer + command.Offset >= _cells.Count)
+        {
+            for (var i = 0; i < _pointer + command.Offset; i++)
+                _cells.Add(0);
+        }
+        
+        _cells[_pointer + command.Offset] += (byte)command.Count;
 
         return null;
     }
 
     public object? VisitDecrementCommand(Command.Decrement command)
     {
-        _cells[_pointer] -= (byte)command.Count;
+        if (_pointer + command.Offset >= _cells.Count)
+        {
+            for (var i = 0; i < _pointer + command.Offset; i++)
+                _cells.Add(0);
+        }
+        
+        _cells[_pointer + command.Offset] -= (byte)command.Count;
 
         return null;
     }

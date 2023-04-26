@@ -62,6 +62,12 @@ public class CCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
 
     public object? VisitIncrementCommand(Command.Increment command)
     {
+        if (command.Offset != 0)
+        {
+            Add($"*(pointer + {command.Offset}) += {command.Count};");
+            return null;
+        }
+        
         Add($"*pointer += {command.Count};");
         
         return null;
@@ -69,6 +75,12 @@ public class CCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
 
     public object? VisitDecrementCommand(Command.Decrement command)
     {
+        if (command.Offset != 0)
+        {
+            Add($"*(pointer + {command.Offset}) -= {command.Count};");
+            return null;
+        }
+        
         Add($"*pointer -= {command.Count};");
         
         return null;
