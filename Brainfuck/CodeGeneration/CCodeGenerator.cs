@@ -34,14 +34,14 @@ public class CCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
 
     public object? VisitInputCommand(Command.Input command)
     {
-        Add("*pointer = input();");
+        Add($"*{(command.Offset > 0 ? "pointer" : $"(pointer + {command.Offset}")} = input();");
         
         return null;
     }
 
     public object? VisitOutputCommand(Command.Output command)
     {
-        Add("putchar(*pointer);");
+        Add($"putchar(*{(command.Offset > 0 ? "pointer" : $"(pointer + {command.Offset}")});");
         
         return null;
     }
@@ -111,6 +111,13 @@ public class CCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
     public object? VisitToZeroCommand()
     {
         Add("*pointer = 0;");
+
+        return null;
+    }
+
+    public object? VisitMultiplyCommand(Command.Multiply command)
+    {
+        Add($"*(pointer + {command.Offset}) += *pointer * {command.Count};");
 
         return null;
     }

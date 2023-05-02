@@ -103,6 +103,13 @@ public class CSharpCodeGenerator : BaseCodeGenerator, Command.IVisitor<object?>
         return null;
     }
 
+    public object? VisitMultiplyCommand(Command.Multiply command)
+    {
+        Add($"cells[pointer + {command.Offset}] += cells[pointer] * {command.Count};");
+
+        return null;
+    }
+
     public object? VisitEofCommand(Command.Eof command)
     {
         Indentations--;

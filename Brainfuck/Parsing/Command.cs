@@ -17,23 +17,60 @@ public abstract class Command
         public T VisitEofCommand(Eof command);
 
         public T VisitToZeroCommand();
+
+        public T VisitMultiplyCommand(Multiply command);
+    }
+
+    public interface ICommandWithOffset
+    {
+        public int Offset { get; set; }
+    }
+    
+    public interface IManipulation
+    {
+        public int Count { get; }
+        public int Offset { get; }
     }
 
     public abstract T Accept<T>(IVisitor<T> visitor);
-    public class Input: Command {
+    public class Input: Command, ICommandWithOffset {
         public override T Accept<T>(IVisitor<T> visitor) {
             return visitor.VisitInputCommand(this);
         }
 
-        public override string ToString() => ",";
+        public Input()
+        {
+            Offset = 0;
+        }
+        
+        public Input(int offset)
+        {
+            Offset = offset;
+        }
+        
+        public int Offset { get; set; }
+        
+        public override string ToString() => "input() ";
     }
 
-    public class Output: Command {
+    public class Output: Command, ICommandWithOffset {
         public override T Accept<T>(IVisitor<T> visitor) {
             return visitor.VisitOutputCommand(this);
         }
+        
+        public Output()
+        {
+            Offset = 0;
+        }
+        
+        public Output(int offset)
+        {
+            Offset = offset;
+        }
+        
+        public int Offset { get; set; }
 
-        public override string ToString() => ".";
+        public override string ToString() => "print() ";
     }
 
     public class Left: Command {
@@ -45,7 +82,7 @@ public abstract class Command
             return visitor.VisitLeftCommand(this);
         }
 
-        public override string ToString() => $"<{Count}";
+        public override string ToString() => $"p-={Count} ";
 
         public readonly int Count;
     }
@@ -59,17 +96,16 @@ public abstract class Command
             return visitor.VisitRightCommand(this);
         }
 
-        public override string ToString() => $">{Count}";
+        public override string ToString() => $"p+={Count} ";
 
         public readonly int Count;
     }
 
-    public class Increment: Command {
+    public class Increment: Command, IManipulation {
         public Increment(int count) {
             Count = count;
-            Offset = 0;
         }
-        
+
         public Increment(int count, int offset)
         {
             Count = count;
@@ -80,16 +116,15 @@ public abstract class Command
             return visitor.VisitIncrementCommand(this);
         }
 
-        public override string ToString() => $"+[{Offset}]{Count}";
+        public override string ToString() => $"*p+={Count} ";
 
-        public readonly int Count;
-        public int Offset;
+        public int Count { get; }
+        public int Offset { get; }
     }
 
-    public class Decrement: Command {
+    public class Decrement: Command, IManipulation {
         public Decrement(int count) {
             Count = count;
-            Offset = 0;
         }
 
         public Decrement(int count, int offset)
@@ -102,10 +137,10 @@ public abstract class Command
             return visitor.VisitDecrementCommand(this);
         }
 
-        public override string ToString() => $"-[{Offset}]{Count}";
+        public override string ToString() => $"*p-={Count} ";
 
-        public readonly int Count;
-        public readonly int Offset;
+        public int Count { get; }
+        public int Offset { get; }
     }
 
     public class Loop : Command {
@@ -146,7 +181,28 @@ public abstract class Command
             return visitor.VisitToZeroCommand();
         }
 
+        public override string ToString() => "zero() ";
+    }
 
-        public override string ToString() => "0";
+    public class Multiply : Command, ICommandWithOffset
+    {
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitMultiplyCommand(this);
+        }
+
+        public Multiply(int offset, int count)
+        {
+            Offset = offset;
+            Count = count;
+        }
+
+        public override string ToString()
+        {
+            return $"mul({Offset}, {Count}) ";
+        }
+
+        public int Offset { get; set; }
+        public readonly int Count;
     }
 }

@@ -8,6 +8,9 @@ namespace Brainfuck;
 class Program
 {
     // TODO: optimise IR
+    
+    // TODO: make copy loop check if loop contains p[0]-=1
+    // TODO: add offset back to manipulation commands
 
     static void Main(string[] args)
     {
@@ -29,10 +32,10 @@ class Program
             Console.WriteLine($"Unable to find file {args[0]}");
             ShowHelp(args);
         }
-        catch (Exception exception)
-        {
-            Console.WriteLine($"Error: {exception.Message}");
-        }
+        //catch (Exception exception)
+        //{
+        //    Console.WriteLine($"Error: {exception.Message}");
+        //}
     }
 
     static void RunRepl(string[] args)

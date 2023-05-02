@@ -23,14 +23,20 @@ public class Interpreter : Command.IVisitor<object?>
 
     public object? VisitInputCommand(Command.Input command)
     {
-        _cells[_pointer] = Encoding.Default.GetBytes(Console.ReadKey().KeyChar.ToString())[0];
-
+        if (IsOutOfBound(command.Offset)) 
+            AddCells(command.Offset);
+            
+        _cells[_pointer + command.Offset] = Encoding.Default.GetBytes(Console.ReadKey().KeyChar.ToString())[0];
+        
         return null;
     }
 
     public object? VisitOutputCommand(Command.Output command)
     {
-        Console.Write((char)_cells[_pointer]);
+        if (IsOutOfBound(command.Offset)) 
+            AddCells(command.Offset);
+        
+        Console.Write((char)_cells[_pointer + command.Offset]);
 
         return null;
     }
@@ -47,35 +53,22 @@ public class Interpreter : Command.IVisitor<object?>
     {
         _pointer += (byte)command.Count;
 
-        var originalCount = _cells.Count;
-        for (var i = 0; i <= _pointer - originalCount; i++)
-            _cells.Add(0);
+        if (_pointer - _cells.Count >= 0)
+            AddCells(_pointer - _cells.Count);
 
         return null;
     }
 
     public object? VisitIncrementCommand(Command.Increment command)
     {
-        if (_pointer + command.Offset >= _cells.Count)
-        {
-            for (var i = 0; i < _pointer + command.Offset; i++)
-                _cells.Add(0);
-        }
-        
-        _cells[_pointer + command.Offset] += (byte)command.Count;
+        _cells[_pointer] += (byte)command.Count;
 
         return null;
     }
 
     public object? VisitDecrementCommand(Command.Decrement command)
     {
-        if (_pointer + command.Offset >= _cells.Count)
-        {
-            for (var i = 0; i < _pointer + command.Offset; i++)
-                _cells.Add(0);
-        }
-        
-        _cells[_pointer + command.Offset] -= (byte)command.Count;
+        _cells[_pointer] -= (byte)command.Count;
 
         return null;
     }
@@ -102,5 +95,24 @@ public class Interpreter : Command.IVisitor<object?>
     public object? VisitEofCommand(Command.Eof command)
     {
         return null;
+    }
+
+    public object? VisitMultiplyCommand(Command.Multiply command)
+    {
+        if (IsOutOfBound(command.Offset)) 
+            AddCells(command.Offset);
+
+        _cells[_pointer + command.Offset] += (byte)(_cells[_pointer] * command.Count);
+
+        return null;
+    }
+
+    private bool IsOutOfBound(int offset) => offset > 0 && _pointer + offset >= _cells.Count;
+    
+    private void AddCells(int offset)
+    {   
+        var originalCount = _cells.Count;
+        for (var i = 0; i <= _pointer + offset - originalCount + 1; i++)
+            _cells.Add(0);
     }
 }
